@@ -83,16 +83,11 @@ app.get('/fundingRates/:marketName/:side', async (_req: Request, res: Response) 
   try{
     const marketName = _req.params.marketName as string;
     const side = _req.params.side as string;
-    const startTime = Number(_req.query.startTime);
-    const endTime = _req.query.endTime ? Number(_req.query.endTime) : undefined;
+    const now = Date.now();
+    const startTime = _req.query.startTime ? Number(_req.query.startTime) : now - (2 * 24 * 60 * 60 * 1000);
+    const endTime = _req.query.endTime ? Number(_req.query.endTime) : now - (1 * 24 * 60 * 60 * 1000);
     
-    if(!startTime || isNaN(startTime)){
-      return res.status(BAD_REQUEST_CODE).json({
-        error: "startTime is required",
-        message: "startTime query parameter is required (epoch milliseconds)"
-      });
-    }
-   
+
     const fundingRates = await extendedClient.getFundingRates(marketName, side, startTime, endTime);
     return res.status(SUCCESS_CODE).json({
       success: true,
