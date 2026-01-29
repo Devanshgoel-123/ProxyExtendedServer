@@ -413,10 +413,12 @@ export class ExtendedWrapper {
     endTime?: number,
      // in epoch  milliseconds
   ): Promise<ExtendedApiResponse<FundingRate[]>> {
+    const endTimeParam = endTime !== undefined ? `&end_time=${endTime}` : '';
+    const startTimeParam = startTime !== undefined ? `&start_time=${startTime}` : '';
     return this.makeRequest<FundingRate[]>(
       `/api/v1/markets/funding-rates?market_name=${encodeURIComponent(
         marketName
-      )}&side=${encodeURIComponent(side)}&start_time=${startTime}&end_time=${endTime}`
+      )}&side=${encodeURIComponent(side)}${startTimeParam}${endTimeParam}`
     );
   }
 

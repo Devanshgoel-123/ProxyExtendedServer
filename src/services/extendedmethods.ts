@@ -1,7 +1,7 @@
 import ExtendedWrapper, { OpenOrder, Position } from "../ExtendedWrapperSDk"
 import { ApiResponse } from "../utils/types"
 import { FundingRate } from "../ExtendedWrapperSDk";
-
+import { Balance } from "../ExtendedWrapperSDk";
 
 /**
  * Get positions for a specific market or all markets
@@ -77,6 +77,36 @@ export const getOrderHistory = async (extendedWrapper: ExtendedWrapper, marketNa
             success: false,
             message: "Error getting order history",
             data: []
+        }
+    }
+}
+
+/**
+ * Get user holdings
+ * @param extendedWrapper - The extended wrapper instance
+ * @returns The user holdings
+ * @returns {
+ *  success: boolean;
+ *  message: string;
+ *  data: Balance;
+ * }
+ */
+export const getUserHoldings = async (extendedWrapper: ExtendedWrapper):Promise<ApiResponse<Balance>> => {
+    try{
+        const response = await extendedWrapper.getHoldings();
+        const userHoldings = response.data;
+        return {
+            success: true,
+            message: "User holdings fetched successfully",
+            data: userHoldings
+        }
+    }
+    catch(err){
+        console.error("Error getting user holdings", err);
+        return {
+            success: false,
+            message: "Error getting user holdings",
+            data: {} as Balance
         }
     }
 }

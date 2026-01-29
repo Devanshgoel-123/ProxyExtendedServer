@@ -1,7 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import ExtendedWrapper from './ExtendedWrapperSDk';
 import { INTERNAL_SERVER_ERROR_CODE, SUCCESS_CODE, BAD_REQUEST_CODE } from './utils/constants';
-import { getPositions, getOrderHistory } from './services/extendedmethods';
+import { getPositions, getOrderHistory, getUserHoldings } from './services/extendedmethods';
 import dotenv from 'dotenv';
 dotenv.config();
 const app: Application = express();
@@ -55,13 +55,37 @@ app.get('/positions', async (_req: Request, res: Response) => {
 });
 
 
+app.get('/holdings', async (_req: Request, res: Response) => {
+  try{
+    const holdings = await getUserHoldings(extendedClient);
+    if(holdings.success){
+      return res.status(SUCCESS_CODE).json({
+        success: true,
+        message: "Holdings fetched successfully",
+        data: holdings.data
+      });
+    }else{
+      return res.status(BAD_REQUEST_CODE).json({
+        error: holdings.message,
+        message: holdings.message
+      });
+    }
+  }catch(err){
+    console.error("Error getting holdings", err);
+    return res.status(INTERNAL_SERVER_ERROR_CODE).json({
+      error: "Error getting holdings",
+      message: err
+    });
+  }
+});
+
 app.get('/fundingRates/:marketName/:side', async (_req: Request, res: Response) => {
   try{
     const marketName = _req.params.marketName as string;
     const side = _req.params.side as string;
     const startTime = Number(_req.query.startTime);
-    const endTime = _req.query.endTime ? Number(_req.query.endTime) : Date.now();
-
+    const endTime = _req.query.endTime ? Number(_req.query.endTime) : undefined;
+    
     if(!startTime || isNaN(startTime)){
       return res.status(BAD_REQUEST_CODE).json({
         error: "startTime is required",
