@@ -3,6 +3,7 @@ import ExtendedWrapper from './ExtendedWrapperSDk';
 import { INTERNAL_SERVER_ERROR_CODE, SUCCESS_CODE, BAD_REQUEST_CODE } from './utils/constants';
 import { getPositions, getOrderHistory, getUserHoldings } from './services/extendedmethods';
 import dotenv from 'dotenv';
+import cors from 'cors';
 dotenv.config();
 const app: Application = express();
 const PORT = process.env.PORT || 3000;
@@ -10,6 +11,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cors());
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -49,7 +52,7 @@ app.get('/positions', async (_req: Request, res: Response) => {
     console.error("Error getting positions", err);
     return res.status(INTERNAL_SERVER_ERROR_CODE).json({
       error: "Error getting positions",
-      message: err
+      message: err instanceof Error ? err.message : String(err)
     });
   }
 });
@@ -74,7 +77,7 @@ app.get('/holdings', async (_req: Request, res: Response) => {
     console.error("Error getting holdings", err);
     return res.status(INTERNAL_SERVER_ERROR_CODE).json({
       error: "Error getting holdings",
-      message: err
+      message: err instanceof Error ? err.message : String(err)
     });
   }
 });
@@ -86,8 +89,6 @@ app.get('/fundingRates/:marketName/:side', async (_req: Request, res: Response) 
     const now = Date.now();
     const startTime = _req.query.startTime ? Number(_req.query.startTime) : now - (2 * 24 * 60 * 60 * 1000);
     const endTime = _req.query.endTime ? Number(_req.query.endTime) : now - (1 * 24 * 60 * 60 * 1000);
-    
-
     const fundingRates = await extendedClient.getFundingRates(marketName, side, startTime, endTime);
     return res.status(SUCCESS_CODE).json({
       success: true,
@@ -98,7 +99,7 @@ app.get('/fundingRates/:marketName/:side', async (_req: Request, res: Response) 
     console.error("Error getting funding rates", err);
     return res.status(INTERNAL_SERVER_ERROR_CODE).json({
       error: "Error getting funding rates",
-      message: err
+      message: err instanceof Error ? err.message : String(err)
     });
   }
 });
@@ -130,7 +131,7 @@ app.get('/marketOrders/:marketName', async (_req: Request, res: Response) => {
     console.error("Error getting order history", err);
     return res.status(INTERNAL_SERVER_ERROR_CODE).json({
       error: "Error getting order history",
-      message: err
+      message: err instanceof Error ? err.message : String(err)
     });
   }
 });
